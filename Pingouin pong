@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Jeu de Pong</title>
+<style>
+body { background: #111; color: white; text-align: center; font-family: sans-serif; }
+canvas { background: #000; border: 3px solid #fff; margin-top: 20px; }
+</style>
+</head>
+<body>
+<h1>Pong</h1>
+<p>Utilisez les touches <strong>Z</strong> et <strong>S</strong> pour bouger la raquette.</p>
+<canvas id="pong" width="600" height="400"></canvas>
+
+<script>
+const canvas = document.getElementById("pong");
+const ctx = canvas.getContext("2d");
+
+// Joueur et IA
+const player = { x: 10, y: 150, w: 10, h: 80, dy: 0, speed: 6 };
+const ai = { x: 580, y: 150, w: 10, h: 80, speed: 4 };
+const ball = { x: 300, y: 200, r: 7, dx: 4, dy: 4 };
+
+// Contrôles
+window.addEventListener("keydown", e => {
+if (e.key === "z" || e.key === "Z") player.dy = -player.speed;
+if (e.key === "s" || e.key === "S") player.dy = player.speed;
+});
+window.addEventListener("keyup", () => player.dy = 0);
+
+function update() {
+// Déplacement joueur
+player.y += player.dy;
+player.y = Math.max(0, Math.min(canvas.height - player.h, player.y));
+
+// Déplacement IA
+if (ball.y < ai.y + ai.h / 2) ai.y -= ai.speed;
+else ai.y += ai.speed;
+
+// Déplacement balle
+ball.x += ball.dx;
+ball.y += ball.dy;
+
+// Rebonds haut/bas
+if (ball.y - ball.r < 0 || ball.y + ball.r > canvas.height) ball.dy *= -1;
+
+// Rebonds raquettes
+if (ball.x - ball.r < player.x + player.w && ball.y > player.y && ball.y < player.y + player.h) ball.dx *= -1;
+if (ball.x + ball.r > ai.x && ball.y > ai.y && ball.y < ai.y + ai.h) ball.dx *= -1;
+
+// Reinitialisation si point
+if (ball.x < 0 || ball.x > canvas.width) {
+ball.x = 300;
+ball.y = 200;
+ball.dx *= -1;
+}
+}
+
+function draw() {
+ctx.clearRect(0, 0, canvas.width, canvas.height);
+ctx.fillStyle = "#fff";
+ctx.fillRect(player.x, player.y, player.w, player.h);
+ctx.fillRect(ai.x, ai.y, ai.w, ai.h);
+ctx.beginPath();
+ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+ctx.fill();
+}
+
+function loop() {
+update();
+draw();
+requestAnimationFrame(loop);
+}
+
+loop();
+</script>
+</body>
+</html>
